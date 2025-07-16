@@ -44,12 +44,19 @@ if __name__ == "__main__":
         print(f"[+] Patched {patched} symbols")
 
         # 4) symbols struct update
-        task_struct = user_types["task_struct"]["fields"]
-        # TODO mm_struct
-        if 'struct' in actions and user_types["task_struct"]["fields"]["comm"]["offset"] == 1888:
-            for name, entry in task_struct.items():
-                if entry["offset"] >= 1160:
-                    entry["offset"] += 200
+        if 'struct' in actions:
+            # task_struct
+            if user_types["task_struct"]["fields"]["comm"]["offset"] == 1888:
+                task_struct = user_types["task_struct"]["fields"]
+                for name, entry in task_struct.items():
+                    if entry["offset"] >= 1160:
+                        entry["offset"] += 200
+            
+            # mm_struct
+            mm_struct = user_types["mm_struct"]["fields"]
+            mm_struct_name = mm_struct["unnamed_field_0"]["type"]["name"]
+            mm_struct_real = user_types[mm_struct_name]["fields"]
+            mm_struct_real["pgd"]["offset"] = 88
 
     # 5) save
     out_path = vmlinux_symbol_path
